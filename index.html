@@ -1,173 +1,329 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>REST Form Demo</title>
 
-    <style>
-      body {
-        font-family: Arial;
-      }
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>REST Form Demo</title>
 
-      #recordForm {
-        display: none;
-      }
+  <style>
+    body {
+      font-family: Arial;
+    }
 
-      #recordIDcontainer {
-        display: none;
-      }
-    </style>
-  </head>
-  <body>
-    <h1>Endpoint Tester</h1>
+    #recordForm {
+      display: none;
+    }
 
-    <form id="actionForm">
+    #recordIDcontainer {
+      display: none;
+    }
+  </style>
+</head>
 
-      <label for="endpoint">Endpoint:</label>
-      <input type="text" value="http://localhost:3000/posts" id="endpoint">
-      <br />
+<body>
+  <h1>Endpoint Tester</h1>
 
-      <label for="action">Action:</label>
-      <select id="action">
-        <option disabled>Pick CRUD Action:</option>
-        <option value="List All">List All</option>
-        <option value="List One">List One</option>
-        <option value="Create">Create</option>
-        <option value="Update">Update</option>
-        <option value="Delete">Delete</option>
-      </select>
+  <form id="actionForm">
 
-      <button type="submit">Create Request</button>
-    </form>
+    <label for="endpoint">Endpoint:</label>
+    <input type="text" value="http://localhost:3000/posts" id="endpoint">
+    <br />
 
-    <form id="recordForm">
-      <div>
-        <label for="author">Author</label>
-        <input type="text" name="author" id="author" />
-      </div>
+    <label for="action">Action:</label>
+    <select id="action">
+      <option disabled>Pick CRUD Action:</option>
+      <option value="List All">List All</option>
+      <option value="List One">List One</option>
+      <option value="Create">Create</option>
+      <option value="Update">Update</option>
+      <option value="Delete">Delete</option>
+    </select>
 
-      <div>
-        <label for="title">Title: </label>
-        <input
-          type="text"
-          name="title"
-          id="title"
-        />
-      </div>
+    <button type="submit">Create Request</button>
+  </form>
 
-      <div id="recordIDcontainer">
-        <label for="recordID">Record ID: </label>
-        <input
-          type="recordID"
-          name="recordID"
-          id="recordID"
-        />
-      </div>
-
-      <div>
-        <button type="submit">Execute</button>
-      </div>
-    </form>
-
-    <hr />
-
+  <form id="recordForm">
     <div>
-      <output id="output"></output>
+      <label for="author">Author</label>
+      <input type="text" name="author" id="author" />
     </div>
 
-    <!-- Main Script -->
-    <script type="module">
-      // This function should fetch all of the data from the given endpoint.
-      // From the 4 CRUD actions, this is the READ action, and uses the GET http method.
-      // The main difference from fetchOne() will be the URL you request from; check
-      // the writeup to view the URL pattern for fetch one and fetch all
-      function fetchAll() {
-        // TODO
+    <div>
+      <label for="title">Title: </label>
+      <input type="text" name="title" id="title" />
+    </div>
+
+    <div id="recordIDcontainer">
+      <label for="recordID">Record ID: </label>
+      <input type="recordID" name="recordID" id="recordID" />
+    </div>
+
+    <div>
+      <button id="submitButton" type="submit">Execute</button>
+    </div>
+  </form>
+
+  <hr />
+
+  <div>
+    <output id="output"></output>
+  </div>
+
+  <!-- Main Script -->
+  <script type="module">
+    var titleVal = document.getElementById("title")
+    var authorVal = document.getElementById("author")
+    var recordVal = document.getElementById("recordID")
+    var endpointVal = document.getElementById("endpoint")
+    var outputVal = document.getElementById("output")
+    var recordContVal = document.getElementById("recordIDcontainer")
+    var recordFormVal = document.getElementById("recordForm")
+
+
+    // This function should fetch all of the data from the given endpoint.
+    // From the 4 CRUD actions, this is the READ action, and uses the GET http method.
+    // The main difference from fetchOne() will be the URL you request from; check
+    // the writeup to view the URL pattern for fetch one and fetch all
+    async function fetchAll() {
+      outputVal.innerHTML = ""
+      recordFormVal.style.display = "none"
+      recordContVal.style.display = "none"
+      try {
+        let resp = await fetch(endpointVal.value)
+        let json = await resp.json()
+        // Debug
+        console.log(json)
+        
+        if (resp.ok) {
+          outputVal.innerHTML = JSON.stringify(json)
+        } else if (resp.status === 404) {
+          outputVal.innerHTML = "Network Error: 404"
+        }
+      } catch (err) {
+        outputVal.innerHTML = err
+      }
+    }
+
+    // This function should fetch one entry from the given endpoint.
+    // From the 4 CRUD actions, this is the READ action, and uses the GET http method.
+    // The main difference from fetchAll() will be the URL you request from; check
+    // the writeup to view the URL pattern for fetch one and fetch all
+    async function fetchOne() {
+      outputVal.innerHTML = ""
+      recordFormVal.style.display = "none"
+      recordContVal.style.display = "none"
+
+      let fetchedID = window.prompt("ENTER RECORD ID!")
+      let lookUp = endpointVal.value + '/' + fetchedID
+
+      try {
+        let resp = await fetch(lookUp)
+        let json = await resp.json()
+
+        // debug
+        console.log(resp)
+        console.log(json)
+
+        if (resp.ok) {
+          outputVal.innerHTML = JSON.stringify(json)
+        } else if (resp.status === 404) {
+          outputVal.innerHTML = "Network Error: 404"
+        }
+      } catch (err) {
+        throw Error('error')
+      }
+    }
+
+    /* I dont want to scroll up to look at variables
+        var titleVal = document.getElementById("title")
+        var authorVal = document.getElementById("author")
+        var recordVal = document.getElementById("recordID")
+        var endpointVal = document.getElementById("endpoint")
+        var outputVal = document.getElementById("output")
+        var recordContVal = document.getElementById("recordIDcontainer")
+        var recordFormVal = document.getElementById("recordForm")
+        */
+
+    // This function should use fetch to create one entry in the given endpoint.
+    // From the 4 CRUD actions, this is the CREATE action, and uses the POST http method.
+    // The main difference from updateRecord() will be the URL you send data to; check
+    // the writeup to view the URL pattern for create and update
+    async function createRecord(val) {
+      if (val == "show") {
+        outputVal.innerHTML = ""
+        recordFormVal.style.display = "inline"
+        recordContVal.style.display = "none"
+      } else if (val == "submit") {
+        try {
+          let data = { author: authorVal.value, title: titleVal.value }
+          let json = JSON.stringify(data)
+
+
+          let resp = await fetch(endpointVal.value, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: json
+          })
+
+          let temp = await resp.json()
+          outputVal.innerHTML = JSON.stringify(temp)
+
+          if (resp.ok) {
+          } else if (resp.status === 404) {
+            outputVal.innerHTML = "Network Error: 404"
+          }
+          /*
+          Dumb way to do it lol
+
+          console.log("1")
+          resp = await fetch(endpointVal.value)
+          json = await resp.json()
+          
+          if (resp.ok) {
+          } else if (resp.status === 404){
+            outputVal.innerHTML = "'404\'ed response failure"
+          }
+          
+          let currID = json.length
+
+          let temp = endpointVal.value + '/' + currID
+          console.log("2")
+
+          resp = await fetch(temp)
+          json = await resp.json()
+          console.log("3")
+
+          outputVal.innerHTML = JSON.stringify(json)
+          */
+
+        } catch (err) {
+          throw Error('error')
+        }
+      }
+    }
+
+    // This function should use fetch to update one existing entry in the given endpoint.
+    // From the 4 CRUD actions, this is the UPDATE action, and uses the PUT http method.
+    // The main difference from createRecord() will be the URL you send data to; check
+    // the writeup to view the URL pattern for create and update
+    async function updateRecord(val) {
+      if (val == "show") {
+        outputVal.innerHTML = ""
+        recordFormVal.style.display = "inline"
+        recordContVal.style.display = "inline"
+      } else if (val == "submit") {
+        try {
+          let data = { author: authorVal.value, title: titleVal.value }
+          let json = JSON.stringify(data)
+          console.log("0")
+          let currID = recordVal.value
+          console.log("1")
+          let url = endpointVal.value + '/' + currID
+          console.log("2")
+          let resp = await fetch(url, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: json
+          })
+
+          let temp = await resp.json()
+          outputVal.innerHTML = JSON.stringify(temp)
+
+          if (resp.ok) {
+          } else if (resp.status === 404) {
+            outputVal.innerHTML = "Network Error: 404"
+          }
+        } catch (err) {
+          throw Error('error')
+        }
+      }
+    }
+
+    // This function should use fetch to delete one existing entry in the given endpoint.
+    // From the 4 CRUD actions, this is the DELETE action, and uses the DELETE http method.
+    // The main difference from fetchOne() will be the HTTP method you use to make your
+    // request; check the writeup to view the URL pattern for get one and delete. THERE IS NO 
+    // delete all, only delete one.
+    async function deleteRecord() {
+      outputVal.innerHTML = ""
+      recordFormVal.style.display = "none"
+      recordContVal.style.display = "none"
+
+      let fetchedID = window.prompt("ENTER RECORD ID!")
+      let lookUp = endpointVal.value + '/' + fetchedID
+      try {
+        let resp = await fetch(lookUp, {
+          method: 'DELETE'
+        })
+
+        let json = await resp.json()
+
+        if (resp.ok) {
+          outputVal.innerHTML = JSON.stringify(json)
+        } else if (resp.status === 404) {
+          outputVal.innerHTML = "Network Error: 404"
+        }
+      } catch (err) {
+        throw Error('error')
       }
 
-      // This function should fetch one entry from the given endpoint.
-      // From the 4 CRUD actions, this is the READ action, and uses the GET http method.
-      // The main difference from fetchAll() will be the URL you request from; check
-      // the writeup to view the URL pattern for fetch one and fetch all
-      function fetchOne() {
-        // TODO
-      }
+    }
 
-      // This function should use fetch to create one entry in the given endpoint.
-      // From the 4 CRUD actions, this is the CREATE action, and uses the POST http method.
-      // The main difference from updateRecord() will be the URL you send data to; check
-      // the writeup to view the URL pattern for create and update
-      function createRecord() {
-        // TODO
-      }
+    window.addEventListener('DOMContentLoaded', () => {
+      // Action Form Event Listener
+      document
+        .getElementById("actionForm")
+        .addEventListener("submit", event => {
+          event.preventDefault();
+          let command = document.getElementById('action').value;
 
-      // This function should use fetch to update one existing entry in the given endpoint.
-      // From the 4 CRUD actions, this is the UPDATE action, and uses the PUT http method.
-      // The main difference from createRecord() will be the URL you send data to; check
-      // the writeup to view the URL pattern for create and update
-      function updateRecord() {
-        // TODO
-      }
+          switch (command) {
+            case "List All":
+              fetchAll();
+              break;
+            case "List One":
+              fetchOne();
+              break;
+            case "Create":
+              createRecord('show');
+              break;
+            case "Update":
+              updateRecord('show');
+              break;
+            case "Delete":
+              deleteRecord();
+              break;
+            default:
+              alert("Error: Illegal Action");
+          }
+        });
 
-      // This function should use fetch to delete one existing entry in the given endpoint.
-      // From the 4 CRUD actions, this is the DELETE action, and uses the DELETE http method.
-      // The main difference from fetchOne() will be the HTTP method you use to make your
-      // request; check the writeup to view the URL pattern for get one and delete. THERE IS NO 
-      // delete all, only delete one.
-      function deleteRecord() {
-        // TODO
-      }
+      // Record Form Event Listener
+      document
+        .getElementById("recordForm")
+        .addEventListener("submit", event => {
+          event.preventDefault();
+          let command = document.getElementById('action').value;
 
-      window.addEventListener('DOMContentLoaded', () => {
-        // Action Form Event Listener
-        document
-          .getElementById("actionForm")
-          .addEventListener("submit", event => {
-            event.preventDefault();
-            let command = document.getElementById('action').value;
+          switch (command) {
+            case "Create":
+              createRecord('submit');
+              break;
+            case "Update":
+              updateRecord('submit');
+              break;
+            default:
+              alert("Error: Illegal Action");
+          }
+        });
+    });
+  </script>
+</body>
 
-            switch (command) {
-              case "List All":
-                fetchAll();
-                break;
-              case "List One":
-                fetchOne();
-                break;
-              case "Create":
-                createRecord('show');
-                break;
-              case "Update":
-                updateRecord('show');
-                break;
-              case "Delete":
-                deleteRecord();
-                break;
-              default:
-                alert("Error: Illegal Action");
-            }
-          });
-
-        // Record Form Event Listener
-        document
-          .getElementById("recordForm")
-          .addEventListener("submit", event => {
-            event.preventDefault();
-            let command = document.getElementById('action').value;
-            
-            switch (command) {
-              case "Create":
-                createRecord('submit');
-                break;
-              case "Update":
-                updateRecord('submit');
-                break;
-              default:
-                alert("Error: Illegal Action");
-            }
-          });
-      });
-    </script>
-  </body>
 </html>
